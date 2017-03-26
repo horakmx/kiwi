@@ -6,7 +6,7 @@
  * @version 0.1 - 2017-03-26 19:33 CEST
  * @licence open
  *
- * how to compile: # gcc -c -O3 kiwi.cpp && gcc -pthread -o kiwi -O3 *.o
+ * how to compile: # gcc -c -O3 kiwi.c && gcc -pthread -o kiwi -O3 *.o
  * how to run:     # cat data_300.txt | ./kiwi
  *
  * @todo: 1. Make make file.
