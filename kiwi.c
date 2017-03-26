@@ -1,5 +1,5 @@
 /**
- * Unsubmited solution for travellingsalesman.cz contest
+ * Unsubmitted solution for travellingsalesman.cz contest
  * Probably not best solution in contest, but this is first version and with competition in mind.
  *
  * @author Michal Horák horakmx@gmail.com
@@ -12,15 +12,15 @@
  * @todo: 1. Make make file.
  * @todo: 2. pthreads are done, now make windows threads happen. :)
  * @todo: 3. Fix small memory leakage.
- * @todo: 4. Add some heuritics into shuffler!!
- * @todo: 5. Test more data sets (only largest data set was tested).
- * @todo: 6. Cheapest first function with backtracking for missing paths.
+ * @todo: 4. Add some heuristics into shuffler!
+ * @todo: 5. Test more data sets (only largest data set - 300 cities was tested).
+ * @todo: 6. Fix cheapest first function - add backtracking for missing paths.
  * @todo: 7. ???
  * @todo: 8. profit
  */
 #include "kiwi.h"
 
-// Time limit defined by travellingsalesman.cz contest (30 s) 
+// Time limit in milliseconds defined by travellingsalesman.cz contest (30 s) 
 #define TIME_LIMIT 29700
 // DEBUG = false ... output is usable for travellingsalesman.cz
 // DEBUG = true  ... info-stream output - usable for online watching of current best solution found
@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
     FILE *fd;
     GlobalData *globalData = (GlobalData *)malloc(sizeof(GlobalData));
     Trip *trip = (Trip *)malloc(sizeof(Trip));
+    unsigned char permutationSize = 6; // OPTIMAL VALUES 5-6 (only for 300 cities?)
 
     if (argc > 1) {
         fd = fopen(argv[1], "r");
@@ -55,8 +56,6 @@ int main(int argc, char *argv[]) {
         return 2;
     }
     // STEP #2 optimize moving sequence size 6 and swap every 2
-    unsigned long a = timer();
-    unsigned char permutationSize = 6; // OPTIMAL VALUE 6
     optimizeTrip(trip, permutationSize);
     if (DEBUG) printf("Price after first optimization = %lu\n", trip->totalPrice);
     // STEP #3 shuffling and reoptimizing -- breaking local optimum
@@ -114,12 +113,9 @@ int main(int argc, char *argv[]) {
             copyTrip(trip, trips[besTrip]);
         }
     }
-    if (DEBUG) printf("%lu ms\n", timer() - a);
     if (DEBUG) validateTrip(trip);
-
     printTrip(trip);
-    time = timer() - time;
-    if (DEBUG) printf("Total time: %lu", time);
+    if (DEBUG) printf("Total time: %lu", timer() - time);
     if (DEBUG) winStall();
     return 0;
 }
@@ -290,6 +286,9 @@ bool sequencePermutationForDay(Trip *trip, unsigned char permutationSize, unsign
     return change;
 }
 
+/**
+ * Compute subtrip price - could be sequence of points (days) or discontinuous array of points (days)
+ */
 unsigned long getSubTripPrice(SubTrip *subTrip) {
     unsigned long price = 0;
     unsigned short day;
@@ -303,6 +302,9 @@ unsigned long getSubTripPrice(SubTrip *subTrip) {
     return price;
 }
 
+/**
+ * Recompute price for subtrip - could be sequence or discontinuous array of points (days)
+ */
 void updateTripBySubtrip(SubTrip *subTrip, unsigned short *bestPermutation, unsigned short *changedDays) {
     unsigned short day, cityFrom, cityTo;
     unsigned long priceBefore = subTrip->trip->totalPrice;
@@ -421,7 +423,6 @@ void copyTrip(Trip *destinationTrip, Trip *sourceTrip) {
 
 /**
  * Simple trip shuffler - swapping few pairs which must be at least 130 % distance size of permutationSize
- * @todo: Add some heuristics better than randomness
  */
 void shuffleTrip(Trip *trip, unsigned char permutationSize, unsigned short * changedDays) {
     unsigned short i, a, b, c, temp;
@@ -655,8 +656,7 @@ static unsigned long timer(void) {
 #endif
 
 /**
- * Only for VisualStudio testing/debug purposes
- * Stops for input
+ * Only for VisualStudio testing/debug purposes, stops for input
  */
 void winStall() {
 #if defined(_WIN32) || defined(_WINDOWS)
